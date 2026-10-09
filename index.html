@@ -82,25 +82,9 @@ svg text{fill:var(--muted);font-size:11px}
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=n=>new Intl.NumberFormat('th-TH').format(Math.round(n));
 const short=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':String(Math.round(n));
-const KEY='catchflow-studio-v3';
+const KEY='catchflow-real-v1';
 let seedN=7;const rnd=()=>(seedN=(seedN*16807)%2147483647)/2147483647;
-function genDaily(){const out=[];let fol=1200;const today=new Date();
-  for(let i=89;i>=0;i--){const d=new Date(today);d.setDate(d.getDate()-i);
-    const growth=1+(89-i)*0.025,views=Math.round(260*growth*(0.7+rnd()*0.6)*(d.getDay()%6===0?1.25:1));
-    fol+=Math.round(views*(0.008+rnd()*0.006));
-    out.push({d:d.toISOString().slice(0,10),views,likes:Math.round(views*(0.06+rnd()*0.03)),fol});}
-  return out}
-const seed=()=>({daily:genDaily(),
-  videos:[
-    {id:1,title:'ตกปลากะพงหน้าฝน',caption:'#ตกปลา #กะพง',views:12840,likes:930,comments:2,status:'ตัวอย่าง',date:'2026-10-01'},
-    {id:2,title:'รีวิวชุดยิงปลาไม้',caption:'#ยิงปลา',views:5120,likes:402,comments:1,status:'ตัวอย่าง',date:'2026-10-05'},
-    {id:3,title:'เทคนิคผูกสายเบ็ด',caption:'#เบ็ด #สอนตกปลา',views:21400,likes:1760,comments:0,status:'ตัวอย่าง',date:'2026-09-20'},
-    {id:4,title:'ทริปทะเลวันหยุด',caption:'#ทะเล #ตกปลา',views:8630,likes:640,comments:0,status:'ตัวอย่าง',date:'2026-09-12'}],
-  comments:[{id:1,video:1,user:'somchai',text:'ที่ไหนครับพี่ สวยมาก',reply:''},{id:2,video:2,user:'nid_fish',text:'ราคาเท่าไหร่คะ',reply:''}],
-  chats:[{id:1,name:'คุณสมชาย',msgs:[{me:false,t:'สนใจชุดยิงปลาครับ'}]},{id:2,name:'คุณนิด',msgs:[{me:false,t:'มีส่งต่างจังหวัดไหมคะ'}]}],
-  products:[{id:1,name:'ชุดยิงปลาไม้',sku:'SG-01',price:1890,stock:12},{id:2,name:'สายเบ็ดถัก 100 ม.',sku:'LN-100',price:320,stock:40},{id:3,name:'เหยื่อปลอมกะพง',sku:'LR-05',price:150,stock:3}],
-  customers:[{id:1,name:'คุณสมชาย',phone:'081-000-0001',note:'สนใจชุดยิงปลา'},{id:2,name:'คุณนิด',phone:'082-000-0002',note:'ส่งต่างจังหวัด'}],
-  orders:[{id:1,no:1001,customer:1,product:1,qty:1,status:'paid',date:'2026-10-03'},{id:2,no:1002,customer:2,product:2,qty:3,status:'pending',date:'2026-10-07'}],
+const seed=()=>({daily:[],videos:[],comments:[],chats:[],products:[],customers:[],orders:[],
   settings:{shop:'CatchFlow',reply:'สวัสดีครับ สนใจสินค้าตัวไหนแจ้งได้เลยครับ'}});
 let S=JSON.parse(localStorage.getItem(KEY)||'null')||seed();
 {const d=seed();for(const k of ['products','customers','orders','settings'])if(!S[k])S[k]=d[k]}
@@ -113,17 +97,22 @@ const nm=(arr,id,k='name')=>arr.find(x=>x.id===id)?.[k]||'—';
 const orderTotal=o=>(S.products.find(p=>p.id===o.product)?.price||0)*o.qty;
 const vt=id=>S.videos.find(v=>v.id===id)?.title||'—';
 let LIVE=null;
-const V=()=>LIVE?.videos?LIVE.videos.map(v=>({id:v.id,title:v.title||'(ไม่มีชื่อ)',caption:'',views:v.view_count||0,likes:v.like_count||0,comments:v.comment_count||0,status:'TikTok',date:new Date((v.create_time||0)*1000).toISOString().slice(0,10)})):S.videos;
-const banner=()=>LIVE?'<div class="banner" style="background:#0f3d2e;color:#3ddc97">เชื่อมต่อ TikTok จริงแล้ว: ยอดวิว ไลก์ ผู้ติดตาม และคลิป มาจากบัญชี '+esc(LIVE.user?.display_name||'')+' (กราฟรายวันยังเป็นตัวอย่าง)</div>':'<div class="banner">โหมดทดลอง: ข้อมูลและกราฟเป็นตัวอย่างเก็บในเบราว์เซอร์นี้ ยังไม่ได้เชื่อมต่อ TikTok จึงไม่มีผลกับบัญชี @wat912</div>';
-fetch('/api/tiktok/me',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{if(d?.connected){LIVE=d;render()}}).catch(()=>{});
+const NOAPI=location.protocol==='file:'||/\.github\.io$/.test(location.hostname);
+const V=()=>LIVE?.videos?LIVE.videos.map(v=>({id:v.id,title:v.title||'(ไม่มีชื่อ)',caption:'',views:v.view_count||0,likes:v.like_count||0,comments:v.comment_count||0,status:'TikTok',date:new Date((v.create_time||0)*1000).toISOString().slice(0,10)})):[];
+const banner=()=>LIVE?'<div class="banner" style="background:#0f3d2e;color:#3ddc97">เชื่อมต่อ TikTok จริงแล้ว: บัญชี '+esc(LIVE.user?.display_name||'')+' · กราฟสะสมจากวันที่เริ่มเชื่อมต่อ</div>':'<div class="banner">ยังไม่ได้เชื่อมต่อ TikTok · ไปที่เมนู "เชื่อมต่อ TikTok" เพื่อดึงข้อมูลจริง</div>';
+const needTT=()=>'<div class="card"><p class="muted">ต้องเชื่อมต่อ TikTok ก่อนจึงจะแสดงข้อมูลจริง</p><button class="primary" data-p="tiktok">ไปหน้าเชื่อมต่อ</button></div>';
+fetch('/api/tiktok/me',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{if(d?.connected){LIVE=d;
+  const VV=V(),t=new Date().toISOString().slice(0,10),row={d:t,views:sum(VV,'views'),likes:sum(VV,'likes'),fol:d.user?.follower_count||0},i=S.daily.findIndex(x=>x.d===t);
+  if(i>=0)S.daily[i]=row;else S.daily.push(row);S.daily=S.daily.slice(-365);save();render()}}).catch(()=>{});
 
 const sum=(a,k)=>a.reduce((s,x)=>s+x[k],0);
-function growthPct(k,n){const cur=S.daily.slice(-n),prev=S.daily.slice(-2*n,-n);
+function growthPct(k,n){const cur=S.daily.slice(-n),prev=S.daily.slice(-2*n,-n);if(!cur.length||!prev.length)return 0;
   if(k==='fol'){const a=cur.at(-1).fol-cur[0].fol,b=prev.at(-1).fol-prev[0].fol;return b?(a-b)/b*100:0}
   const a=sum(cur,k),b=sum(prev,k);return b?(a-b)/b*100:0}
 const delta=p=>`<span class="${p>=0?'up':'dn'}">${p>=0?'▲':'▼'} ${Math.abs(p).toFixed(1)}%</span> <span class="muted" style="font-size:12px">เทียบช่วงก่อน</span>`;
 
 function chartSVG(data,key,w=860,h=300){
+  if(data.length<2)return '<p class="muted">กราฟจะเริ่มแสดงเมื่อมีข้อมูลสะสมอย่างน้อย 2 วัน (TikTok ไม่ให้ดึงย้อนหลัง ระบบบันทึกทุกครั้งที่คุณเปิดเว็บหลังเชื่อมต่อ)</p>';
   const p={l:46,r:14,t:14,b:26},iw=w-p.l-p.r,ih=h-p.t-p.b,vals=data.map(x=>x[key]);
   let lo=Math.min(...vals),hi=Math.max(...vals);if(key!=='fol')lo=0;if(hi===lo)hi=lo+1;
   const X=i=>p.l+i*iw/(data.length-1),Y=v=>p.t+ih-(v-lo)/(hi-lo)*ih;
@@ -135,8 +124,8 @@ function chartSVG(data,key,w=860,h=300){
 function nav(){document.getElementById('nav').innerHTML=pages.map(([id,i,l])=>`<button class="${page===id?'on':''}" data-p="${id}"><span>${i}</span>${l}</button>`).join('');
   document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{page=b.dataset.p;render()})}
 
-function dash(){const VV=V(),v=sum(VV,'views'),l=sum(VV,'likes'),fol=LIVE?.user?.follower_count??S.daily.at(-1).fol,sales=S.orders.filter(o=>o.status!=='cancelled').reduce((a,o)=>a+orderTotal(o),0);
-  return `<div class="head"><h1>ภาพรวม</h1></div><div class="stats">
+function dash(){const VV=V(),v=sum(VV,'views'),l=sum(VV,'likes'),fol=LIVE?.user?.follower_count??0,sales=S.orders.filter(o=>o.status!=='cancelled').reduce((a,o)=>a+orderTotal(o),0);
+  return `<div class="head"><h1>ภาพรวม</h1></div>${LIVE?'':needTT()}<div class="stats">
   ${[['ยอดวิวรวม',fmt(v),delta(growthPct('views',7))],['ไลก์รวม',fmt(l),delta(growthPct('likes',7))],['ผู้ติดตาม',fmt(fol),delta(growthPct('fol',7))],['คลิปทั้งหมด',VV.length,''],['ยอดขายสะสม',baht(sales),''],['คำสั่งซื้อ',S.orders.length,''],['สินค้าใกล้หมด',S.products.filter(p=>p.stock<=5).length,'']].map(([a,b,c])=>`<div class="card"><div class="muted">${a}</div><div class="big">${b}</div>${c}</div>`).join('')}</div>
   <div class="card"><h2>ยอดวิว 30 วันล่าสุด</h2>${chartSVG(S.daily.slice(-30),'views')}</div>
   <div class="card"><h2>คลิปยอดนิยม</h2>${vtable([...VV].sort((a,b)=>b.views-a.views).slice(0,3))}</div>`}
@@ -145,7 +134,7 @@ function vtable(rows,act){if(!rows.length)return '<p class="muted">ยังไ�
   return `<table><thead><tr><th>คลิป</th><th>ยอดวิว</th><th>ไลก์</th><th>สถานะ</th><th>วันที่</th>${act?'<th></th>':''}</tr></thead><tbody>${rows.map(v=>`<tr><td><div style="display:flex;gap:12px;align-items:center"><div class="thumb">${v.src?`<video src="${v.src}" muted></video>`:'▶'}</div><div><b>${esc(v.title)}</b><br><span class="muted">${esc(v.caption)}</span></div></div></td><td>${fmt(v.views)}</td><td>${fmt(v.likes)}</td><td><span class="pill pk">${esc(v.status)}</span></td><td>${esc(v.date)}</td>${act?`<td><button class="del sec" data-delv="${v.id}">ลบ</button></td>`:''}</tr>`).join('')}</tbody></table>`}
 
 function upload(){const d=draft;
-  return `<div class="head"><h1>ลงคลิปใหม่</h1><span class="muted">ตัวอย่างหน้าตาแบบ TikTok</span></div>
+  return `<div class="head"><h1>ลงคลิปใหม่</h1><span class="muted">ส่งขึ้น TikTok จริง</span></div>
   <div class="upl"><div class="card"><form id="up">
     <div class="drop" id="drop"><div style="font-size:34px">⬆</div><b>${d.name?esc(d.name):'เลือกไฟล์วิดีโอ'}</b><span class="muted">MP4, MOV, WebM · แนวตั้ง 9:16 ดีที่สุด</span><input type="file" id="file" accept="video/*" hidden></div>
     <label>แคปชัน</label><textarea name="cap" id="cap" rows="3" maxlength="2200" placeholder="เขียนแคปชัน และ #แฮชแท็ก">${esc(d.cap||'')}</textarea>
@@ -155,9 +144,9 @@ function upload(){const d=draft;
     <div class="opt"><span>อนุญาตให้คอมเมนต์</span><input type="checkbox" checked></div>
     <div class="opt"><span>อนุญาต Duet</span><input type="checkbox" checked></div>
     <div class="opt"><span>อนุญาต Stitch</span><input type="checkbox" checked></div>
-    <div class="row" style="margin-top:18px"><button class="primary" style="flex:1">บันทึกคลิป</button><button type="button" class="sec" id="clr">ล้าง</button></div>
+    <div class="row" style="margin-top:18px"><button type="button" class="sec" id="clr">ล้าง</button></div>
     <button type="button" class="primary" id="pub" style="width:100%;margin-top:10px;background:#111;border:1px solid var(--cy)">ลงคลิปขึ้น TikTok จริง</button><p class="muted" id="pubmsg" style="font-size:13px"></p>
-    <p class="muted" style="font-size:12px">ปุ่ม "ลงคลิปขึ้น TikTok จริง" ส่งวิดีโอไปบัญชีที่เชื่อมไว้ (ต้องเชื่อมต่อ TikTok ก่อน และเปิดผ่าน Vercel) ส่วนปุ่ม "บันทึกคลิป" เก็บในเว็บเราเท่านั้น</p>
+    <p class="muted" style="font-size:12px">ส่งวิดีโอไปบัญชี TikTok ที่เชื่อมไว้ (ต้องเชื่อมต่อ TikTok ก่อน) แอปที่ยังไม่ผ่านการตรวจของ TikTok ลงได้เฉพาะโหมดส่วนตัว</p>
     
   </form></div>
   <div class="phone">${d.url?`<video src="${d.url}" controls loop muted autoplay></video>`:'<div class="ph">ตัวอย่างคลิปจะแสดงที่นี่</div>'}
@@ -171,18 +160,17 @@ function views(){const VV=V(),rows=[...VV].sort((a,b)=>b[sortBy]>a[sortBy]?1:-1)
   <div class="card"><h2>จัดการคลิป</h2>${vtable(rows,true)}</div>`}
 
 function growth(){const n=range,cur=S.daily.slice(-n),M={views:'ยอดวิว',likes:'ไลก์',fol:'ผู้ติดตาม'};
-  const total=metric==='fol'?cur.at(-1).fol-cur[0].fol:sum(cur,metric);
+  if(!LIVE||cur.length<1)return `<div class="head"><h1>กราฟการเติบโต</h1></div>`+(LIVE?'<div class="card"><p class="muted">เริ่มบันทึกสถิติวันนี้แล้ว กราฟจะแสดงเมื่อมีข้อมูลอย่างน้อย 2 วัน (เปิดเว็บทุกวัน)</p></div>':needTT());
+  const total=metric==='fol'?cur.at(-1).fol-cur[0].fol:sum(cur,metric),n2=Math.max(1,cur.length);
   return `<div class="head"><h1>กราฟการเติบโต</h1><div><div class="tabs">${Object.entries(M).map(([k,l])=>`<button class="${metric===k?'on':''}" data-m="${k}">${l}</button>`).join('')}</div><div class="tabs">${[7,30,90].map(r=>`<button class="${range===r?'on':''}" data-r="${r}">${r} วัน</button>`).join('')}</div></div></div>
   <div class="stats"><div class="card"><div class="muted">${M[metric]}${metric==='fol'?'ที่เพิ่ม':'รวม'} ใน ${n} วัน</div><div class="big">${fmt(total)}</div>${delta(growthPct(metric,n))}</div>
-  <div class="card"><div class="muted">เฉลี่ยต่อวัน</div><div class="big">${fmt(total/n)}</div></div>
+  <div class="card"><div class="muted">เฉลี่ยต่อวัน</div><div class="big">${fmt(total/n2)}</div></div>
   <div class="card"><div class="muted">วันที่ดีที่สุด</div><div class="big">${(()=>{const b=cur.reduce((a,x)=>(metric==='fol'?x.fol:x[metric])>(metric==='fol'?a.fol:a[metric])?x:a);return b.d.slice(5)})()}</div></div></div>
   <div class="card"><h2>${M[metric]}รายวัน</h2>${chartSVG(cur,metric)}</div>`}
 
-function comments(){return `<div class="head"><h1>คอมเมนต์</h1></div><div class="card">${S.comments.map(c=>`<div class="cm"><div class="av">${esc(c.user[0].toUpperCase())}</div><div style="flex:1"><b>@${esc(c.user)}</b> <span class="muted">· ${esc(vt(c.video))}</span><p>${esc(c.text)}</p>${c.reply?`<p class="muted">↳ ตอบ: ${esc(c.reply)}</p>`:`<form data-rc="${c.id}" class="row"><input name="r" placeholder="ตอบกลับ" required><button class="primary">ตอบ</button></form>`}</div></div>`).join('')||'<p class="muted">ยังไม่มีคอมเมนต์</p>'}</div>`}
+function comments(){return `<div class="head"><h1>คอมเมนต์</h1></div><div class="card"><p>TikTok ไม่เปิด API ให้อ่านหรือตอบคอมเมนต์สำหรับแอปทั่วไป เว็บจึงดึงมาแสดงไม่ได้ ให้ตอบในแอป TikTok / TikTok Studio โดยตรง</p><p class="muted">จำนวนคอมเมนต์ต่อคลิปดูได้ในหน้า ยอดวิว</p></div>`}
 
-function chats(){const c=S.chats.find(x=>x.id===chatId)||S.chats[0];
-  return `<div class="head"><h1>แชท</h1><button class="sec" id="newchat">＋ แชทใหม่</button></div><div class="card"><div class="chat"><div class="list">${S.chats.map(x=>`<button class="item ${c&&x.id===c.id?'on':''}" data-c="${x.id}"><span class="av">${esc(x.name[0])}</span><span>${esc(x.name)}<br><small class="muted">${esc(x.msgs.at(-1)?.t||'')}</small></span></button>`).join('')}</div>
-  <div>${c?`<h3>${esc(c.name)}</h3><div class="msgs">${c.msgs.map(m=>`<div class="b ${m.me?'me':''}">${esc(m.t)}</div>`).join('')}</div><form id="send" class="row"><input name="t" placeholder="พิมพ์ข้อความ (บันทึกในระบบ ไม่ส่งไป TikTok)" required><button class="primary">ส่ง</button></form>`:'<p class="muted">ยังไม่มีแชท</p>'}</div></div></div>`}
+function chats(){return `<div class="head"><h1>แชท</h1></div><div class="card"><p>TikTok ไม่เปิด API สำหรับข้อความส่วนตัว (DM) เว็บจึงดึงหรือตอบแชท TikTok ไม่ได้</p><p class="muted">ทางออก: ใส่ลิงก์ LINE OA หรือ Messenger ของร้านไว้ในโปรไฟล์ TikTok แล้วคุยกับลูกค้าที่นั่น</p></div>`}
 
 function products(){return `<div class="head"><h1>สินค้า</h1></div><div class="card"><h2>เพิ่มสินค้า</h2><form id="fprod" class="row" style="flex-wrap:wrap"><input name="name" placeholder="ชื่อสินค้า" required style="flex:2;min-width:160px"><input name="sku" placeholder="SKU" style="flex:1;min-width:90px"><input name="price" type="number" min="0" step="any" placeholder="ราคา" required style="flex:1;min-width:90px"><input name="stock" type="number" min="0" placeholder="สต็อก" required style="flex:1;min-width:90px"><button class="primary">เพิ่ม</button></form></div>
 <div class="card">${S.products.length?`<table><thead><tr><th>สินค้า</th><th>SKU</th><th>ราคา</th><th>คงเหลือ</th><th></th></tr></thead><tbody>${S.products.map(p=>`<tr><td><b>${esc(p.name)}</b></td><td>${esc(p.sku||'—')}</td><td>${baht(p.price)}</td><td>${p.stock<=5?`<span class="pill pk">${p.stock} ใกล้หมด</span>`:p.stock}</td><td><button class="sec del" data-del="products:${p.id}">ลบ</button></td></tr>`).join('')}</tbody></table>`:'<p class="muted">ยังไม่มีสินค้า</p>'}</div>`}
@@ -195,23 +183,17 @@ function orders(){const opt=(arr,f)=>arr.map(x=>`<option value="${x.id}">${esc(f
 <div class="card">${S.orders.length?`<table><thead><tr><th>เลขที่</th><th>วันที่</th><th>ลูกค้า</th><th>สินค้า</th><th>ยอดรวม</th><th>สถานะ</th><th></th></tr></thead><tbody>${[...S.orders].reverse().map(o=>`<tr><td>#${o.no}</td><td>${esc(o.date)}</td><td>${o.customer?esc(nm(S.customers,o.customer)):'ลูกค้าทั่วไป'}</td><td>${esc(nm(S.products,o.product))} ×${o.qty}</td><td>${baht(orderTotal(o))}</td><td><select data-ost="${o.id}" style="margin:0;width:auto">${Object.entries(OST).map(([k,l])=>`<option value="${k}" ${o.status===k?'selected':''}>${l}</option>`).join('')}</select></td><td><button class="sec del" data-del="orders:${o.id}">ลบ</button></td></tr>`).join('')}</tbody></table>`:'<p class="muted">ยังไม่มีคำสั่งซื้อ</p>'}</div>`}
 
 function settings(){return `<div class="head"><h1>ตั้งค่า</h1></div><div class="card"><h2>ข้อมูลร้าน</h2><form id="fset"><label>ชื่อร้าน</label><input name="shop" value="${esc(S.settings.shop)}" required><label>ข้อความตอบกลับที่แนะนำ</label><textarea name="reply" rows="3">${esc(S.settings.reply)}</textarea><button class="primary">บันทึก</button></form></div>
-<div class="card"><h2>ข้อมูลทดลอง</h2><p class="muted">ข้อมูลทั้งหมดเก็บในเบราว์เซอร์เครื่องนี้</p><button class="sec del" id="reset">ล้างข้อมูลทดลองทั้งหมด</button></div>`}
+<div class="card"><h2>ข้อมูลในเครื่อง</h2><p class="muted">สินค้า ลูกค้า คำสั่งซื้อ และสถิติสะสม เก็บในเบราว์เซอร์เครื่องนี้</p><button class="sec del" id="reset">ล้างข้อมูลในเครื่อง</button></div>`}
 
 function tiktok(){const c=S.conn||{};
   return `<div class="head"><h1>เชื่อมต่อ TikTok</h1></div>
 <div class="card"><h2>บัญชีช่อง</h2><div id="ttlive"><p class="muted">กำลังตรวจสอบ...</p></div>
-${c.demo?`<p><span class="pill ok">โหมดจำลอง</span> <b>${esc(c.email)}</b> <button class="sec del" id="disc">ยกเลิกการจำลอง</button></p>`:''}
 </div><div class="card"><h2>เชื่อมต่อ TikTok</h2>
 <p><a id="ttgo" href="/api/tiktok/login" style="display:block;text-align:center;padding:16px;border-radius:12px;text-decoration:none;color:#fff;font-weight:700;font-size:16px;background:var(--pk)">🔗 เชื่อมต่อ TikTok ของฉัน</a></p>
 <p class="muted" style="font-size:13px">กดแล้วไปหน้าล็อกอินของ TikTok เอง (สแกน QR หรือกรอกรหัสที่หน้านั้น) เว็บเราไม่เห็นรหัสผ่าน หลังอนุญาต ระบบจะดึงผู้ติดตาม ยอดวิว ไลก์ และคลิปจริงมาแสดงในหน้า ภาพรวม และ ยอดวิว อัตโนมัติ</p>
-${location.protocol==='file:'?'<p class="pill pk" style="display:block;padding:10px">ตอนนี้เปิดจากไฟล์ในเครื่อง ปุ่มนี้จะใช้ได้เมื่ออัปโหลดขึ้น Vercel และตั้งค่า TikTok เสร็จแล้ว</p>':''}</div>
-<div class="card"><h2>โหมดจำลอง (ดูหน้าตาเท่านั้น)</h2>
-<form id="conn"><label>อีเมลที่ใช้กับช่อง (ใช้แสดงชื่อ ห้ามใส่รหัสผ่านที่นี่)</label><input type="email" name="email" value="${esc(c.email||'mokll0081@gmail.com')}" required>
-<div class="row" style="margin-top:12px"><button class="primary" id="demo" style="flex:1">เข้าสู่ระบบ (ทดลอง)</button></div>
-</form></div>
-<div class="card"><p>
-<table><tbody><tr><td>โพสต์คลิปไป TikTok</td><td>Content Posting API (ต้องผ่าน audit)</td></tr><tr><td>ยอดวิว/ไลก์/ผู้ติดตามจริง</td><td>Display API</td></tr><tr><td>คอมเมนต์</td><td>จำกัดตามสิทธิ์ที่ TikTok อนุมัติ</td></tr><tr><td>แชท DM</td><td>ต้องเป็นบัญชี Business ที่ได้รับอนุมัติ</td></tr></tbody></table>
-<p class="muted">ต้องมี Client Key/Secret จาก TikTok for Developers และให้เจ้าของบัญชีกดอนุญาต (OAuth)</p><button class="sec del" id="reset">ล้างข้อมูลทดลอง</button></div>`}
+${NOAPI?'<p class="pill pk" style="display:block;padding:10px">เว็บนี้อยู่บน '+(location.protocol==='file:'?'ไฟล์ในเครื่อง':'GitHub Pages')+' ซึ่งไม่มีระบบหลังบ้าน ปุ่มนี้จะใช้ได้เมื่อ deploy ขึ้น Vercel (ไม่ใช่ GitHub Pages) และตั้งค่า TikTok เสร็จแล้ว</p>':''}</div>
+<div class="card"><table><tbody><tr><td>โพสต์คลิปไป TikTok</td><td>ได้ (Content Posting API; ก่อนผ่าน audit ลงได้เฉพาะส่วนตัว)</td></tr><tr><td>ยอดวิว/ไลก์/ผู้ติดตาม/รายการคลิป</td><td>ได้ (Display API)</td></tr><tr><td>คอมเมนต์ และ แชท DM</td><td>ไม่ได้ (TikTok ไม่เปิด API ให้แอปทั่วไป)</td></tr></tbody></table>
+<p class="muted">ต้องมี Client Key/Secret จาก TikTok for Developers และให้เจ้าของบัญชีกดอนุญาต (OAuth)</p></div>`}
 
 async function loadTT(el){
   try{const r=await fetch('/api/tiktok/me',{cache:'no-store'});if(!r.ok)throw 0;const d=await r.json();
@@ -221,7 +203,7 @@ async function loadTT(el){
     <div class="stats"><div class="card"><div class="muted">ผู้ติดตาม</div><div class="big">${n(u.follower_count)}</div></div><div class="card"><div class="muted">ไลก์รวม</div><div class="big">${n(u.likes_count)}</div></div><div class="card"><div class="muted">คลิป</div><div class="big">${n(u.video_count)}</div></div></div>
 <table><thead><tr><th>คลิปจริงจาก TikTok</th><th>วิว</th><th>ไลก์</th><th>คอมเมนต์</th></tr></thead><tbody>${(d.videos||[]).map(v=>`<tr><td><a href="${esc(v.share_url)}" target="_blank" rel="noopener">${esc(v.title||'(ไม่มีชื่อ)')}</a></td><td>${n(v.view_count)}</td><td>${n(v.like_count)}</td><td>${n(v.comment_count)}</td></tr>`).join('')}</tbody></table>`;
   }catch{el.innerHTML='<p><span class="pill pk">ยังไม่ได้เชื่อมต่อ</span></p><p class="muted">เปิดผ่านเว็บบน Vercel จึงจะเชื่อมจริงได้</p>'}}
-function render(){nav();const me=document.querySelector('.me');if(me)me.innerHTML=`<div class="av">${S.conn?.demo?esc(S.conn.email[0].toUpperCase()):'?'}</div><div>${S.conn?.demo?esc(S.conn.email):esc(S.settings.shop)}<br><small class="muted">${S.conn?.demo?'จำลอง':'ยังไม่เชื่อมต่อ TikTok'}</small></div>`;
+function render(){nav();const me=document.querySelector('.me');if(me)me.innerHTML=`<div class="av">${LIVE?esc((LIVE.user?.display_name||'T')[0].toUpperCase()):'?'}</div><div>${esc(LIVE?.user?.display_name||S.settings.shop)}<br><small class="muted">${LIVE?'เชื่อมต่อ TikTok แล้ว':'ยังไม่เชื่อมต่อ TikTok'}</small></div>`;
   const v={dash,upload,views,growth,comments,chats,products,customers,orders,tiktok,settings};
   document.getElementById('main').innerHTML=banner()+v[page]();bind()}
 
@@ -246,7 +228,7 @@ function bind(){
     fi.onchange=()=>{const f=fi.files[0];if(!f)return;draft.cap=$('cap').value;draft.title=$('ttl').value||f.name.replace(/\.[^.]+$/,'');draft.name=f.name;draft.url=URL.createObjectURL(f);draft.file=f;render()};
     $('pub').onclick=async()=>{const msg=$('pubmsg'),f=draft.file;
       if(!f){msg.textContent='เลือกไฟล์วิดีโอก่อน';return}
-      if(location.protocol==='file:'){msg.textContent='ใช้ได้เมื่อเปิดผ่าน Vercel และเชื่อมต่อ TikTok แล้วเท่านั้น';return}
+      if(NOAPI){msg.textContent='ใช้ได้เมื่อ deploy บน Vercel และเชื่อมต่อ TikTok แล้วเท่านั้น (GitHub Pages ไม่มีระบบหลังบ้าน)';return}
       try{msg.textContent='กำลังเริ่มส่งไป TikTok...';
         const t=$('cap').value||$('ttl').value,priv=document.querySelector('[name=priv]').value;
         const r=await fetch('/api/tiktok/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:t,size:f.size,privacy:priv})});
@@ -261,18 +243,11 @@ function bind(){
     $('cap').oninput=e=>{draft.cap=e.target.value;$('pcap').textContent=e.target.value||'แคปชันของคุณ'};
     $('ttl').oninput=e=>draft.title=e.target.value;
     $('clr').onclick=()=>{draft={};render()};
-    $('up').onsubmit=e=>{e.preventDefault();const d=new FormData($('up'));
-      S.videos.unshift({id:Date.now(),title:d.get('title'),caption:d.get('cap')||'',views:0,likes:0,comments:0,status:d.get('sched')?'ตั้งเวลา':'เก็บในระบบ',date:new Date().toISOString().slice(0,10),src:draft.url||''});
-      draft={};save();page='views';render()}}
-  const sd=$('send');if(sd)sd.onsubmit=e=>{e.preventDefault();S.chats.find(c=>c.id===chatId).msgs.push({me:true,t:new FormData(sd).get('t')});save();render()};
-  const nc=$('newchat');if(nc)nc.onclick=()=>{const n=prompt('ชื่อลูกค้า');if(!n)return;const id=Date.now();S.chats.push({id,name:n,msgs:[]});chatId=id;save();render()};
-  const cf=$('conn');if(cf){const val=()=>Object.fromEntries(new FormData(cf));
-    cf.onsubmit=e=>{e.preventDefault();const v=val();S.conn={demo:true,email:v.email};save();render()};
-  }
+    $('up').onsubmit=e=>e.preventDefault()}
   const live=$('ttlive');if(live)loadTT(live);
-  const go=$('ttgo');if(go&&location.protocol==='file:')go.onclick=e=>{e.preventDefault();alert('ปุ่มนี้ใช้ไม่ได้ตอนเปิดไฟล์จากเครื่อง\n\nต้องอัปโหลดโปรเจกต์ขึ้น Vercel แล้วเปิดผ่านลิงก์ https://...vercel.app จึง  จะไปหน้าล็อกอิน TikTok ได้')};
-    const dc=$('disc');if(dc)dc.onclick=()=>{S.conn=null;save();render()};
-  const rs=$('reset');if(rs)rs.onclick=()=>{if(confirm('ล้างข้อมูลทดลองทั้งหมด?')){localStorage.removeItem(KEY);S=seed();render()}};
+  const go=$('ttgo');if(go&&NOAPI)go.onclick=e=>{e.preventDefault();alert('ปุ่มนี้ใช้ไม่ได้บนไฟล์ในเครื่องหรือ GitHub Pages\n\nระบบเชื่อม TikTok ต้องมีเซิร์ฟเวอร์ ให้ deploy โปรเจกต์ขึ้น Vercel แล้วเปิดผ่านลิงก์ .vercel.app')};
+  const dc=$('disc');if(dc)dc.onclick=()=>{S.conn=null;save();render()};
+  const rs=$('reset');if(rs)rs.onclick=()=>{if(confirm('ล้างข้อมูลในเครื่อง?')){localStorage.removeItem(KEY);S=seed();render()}};
   const ch=$('chart');if(ch)bindChart(ch);
 }
 function bindChart(svg){const data=page==='growth'?S.daily.slice(-range):S.daily.slice(-30),key=svg.dataset.key,tip=document.getElementById('tip'),dot=svg.querySelector('#dot'),hit=svg.querySelector('#hit');
