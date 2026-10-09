@@ -1,1 +1,268 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CatchFlow Studio หลังบ้าน</title>
+<style>
+:root{--bg:#07090f;--panel:#10141f;--panel2:#171c2b;--line:#232a3d;--text:#f1f4ff;--muted:#8d97b5;--cy:#25f4ee;--pk:#fe2c55;--ok:#3ddc97;--grad:linear-gradient(135deg,#25f4ee,#fe2c55)}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",Tahoma,sans-serif;background:radial-gradient(900px 500px at 85% -10%,#fe2c5520,transparent),radial-gradient(800px 500px at -10% 110%,#25f4ee18,transparent),var(--bg);color:var(--text)}
+button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:10px 16px;color:var(--text);background:var(--panel2);transition:.15s}
+button:hover{filter:brightness(1.15)}
+button.primary{background:var(--pk);color:#fff;font-weight:600}
+button.sec{border:1px solid var(--line)}
+button.del{color:var(--pk)}
+input,select,textarea{width:100%;padding:11px 13px;margin:6px 0 14px;border-radius:12px;border:1px solid var(--line);background:#0a0d16;color:var(--text);font:inherit}
+input:focus,textarea:focus,select:focus{outline:1px solid var(--cy)}
+label{font-size:13px;color:var(--muted)}
+h1{margin:0;font-size:26px}h2{margin:0 0 12px;font-size:18px}h3{margin:0 0 8px}
+.muted{color:var(--muted)}
+.app{display:flex;min-height:100vh}
+.side{width:240px;background:#0c101a;border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;margin:0 8px 20px}
+.logo{width:38px;height:38px;border-radius:12px;background:var(--grad);display:grid;place-items:center}
+.side button{width:100%;text-align:left;background:transparent;display:flex;gap:12px;align-items:center}
+.side button.on{background:var(--panel2);box-shadow:inset 3px 0 0 var(--pk)}
+.me{margin-top:auto;display:flex;gap:10px;align-items:center;padding:10px;border-radius:12px;background:var(--panel)}
+.main{flex:1;min-width:0;padding:28px;max-width:1240px}
+.banner{background:#1a1a10;border:1px solid #4a4218;color:#ffe59a;padding:10px 14px;border-radius:12px;margin-bottom:20px;font-size:13px}
+.head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:12px;flex-wrap:wrap}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;margin-bottom:20px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:20px}
+.stats .card{margin:0;position:relative;overflow:hidden}
+.stats .card::after{content:"";position:absolute;right:-30px;top:-30px;width:90px;height:90px;border-radius:50%;background:var(--grad);opacity:.12}
+.big{font-size:30px;font-weight:700;margin-top:4px}
+.up{color:var(--ok);font-size:13px}.dn{color:var(--pk);font-size:13px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;color:var(--muted);font-weight:500;font-size:13px}
+th,td{padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+.thumb{width:48px;height:64px;border-radius:8px;background:linear-gradient(160deg,#25f4ee55,#fe2c5566);display:grid;place-items:center;overflow:hidden;flex:none}
+.pill{display:inline-block;padding:3px 11px;border-radius:99px;background:var(--panel2);font-size:12px}
+.pill.pk{background:#fe2c5526;color:#ff7b95}.pill.ok{background:#3ddc9722;color:var(--ok)}
+.bar{height:8px;border-radius:99px;background:var(--panel2);overflow:hidden;min-width:90px}
+.bar i{display:block;height:100%;background:var(--grad);border-radius:99px}
+.tabs{display:inline-flex;gap:4px;background:var(--panel2);padding:4px;border-radius:12px;margin-right:10px}
+.tabs button{padding:7px 14px;background:transparent;border-radius:9px}
+.tabs button.on{background:var(--pk);color:#fff}
+.upl{display:grid;grid-template-columns:1fr 300px;gap:24px;align-items:start}
+.drop{border:2px dashed var(--line);border-radius:16px;padding:28px;text-align:center;cursor:pointer;margin-bottom:16px;background:#0a0d16}
+.drop:hover{border-color:var(--cy)}
+.drop b{display:block;margin:6px 0 2px}
+.opt{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.opt input{width:auto;margin:0;transform:scale(1.3);accent-color:var(--pk)}
+.phone{width:290px;aspect-ratio:9/16;border-radius:30px;border:6px solid #222a40;background:#000;position:sticky;top:20px;overflow:hidden}
+.phone video{width:100%;height:100%;object-fit:cover}
+.phone .ph{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);text-align:center;padding:20px;background:linear-gradient(160deg,#101a2e,#2a1020)}
+.ov{position:absolute;left:0;right:0;bottom:0;padding:50px 14px 16px;background:linear-gradient(transparent,#000c);font-size:13px}
+.rail{position:absolute;right:10px;bottom:90px;display:flex;flex-direction:column;gap:14px;text-align:center;font-size:11px}
+.rail span{display:block;font-size:24px}
+.chat{display:grid;grid-template-columns:270px 1fr;gap:16px}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{display:flex;gap:10px;align-items:center;text-align:left}
+.item.on{outline:1px solid var(--cy)}
+.av{width:36px;height:36px;border-radius:50%;background:var(--grad);color:#fff;display:grid;place-items:center;font-weight:700;flex:none}
+.msgs{height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:12px;background:#0a0d16;border-radius:14px}
+.b{max-width:70%;padding:8px 13px;border-radius:16px;background:var(--panel2)}
+.b.me{align-self:flex-end;background:var(--pk)}
+.row{display:flex;gap:8px;margin-top:10px}.row input{margin:0}
+.cm{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}.cm p{margin:3px 0}
+#tip{position:fixed;pointer-events:none;background:#000d;border:1px solid var(--line);padding:6px 10px;border-radius:8px;font-size:12px;display:none;z-index:9}
+svg text{fill:var(--muted);font-size:11px}
+@media(max-width:900px){.app{flex-direction:column}.side{width:100%;height:auto;position:static;flex-direction:row;flex-wrap:wrap}.side button{width:auto}.me{display:none}.upl,.chat{grid-template-columns:1fr}.phone{margin:auto}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side"><div class="brand"><div class="logo">🐟</div>CatchFlow Studio</div><div id="nav"></div><div class="me"><div class="av">W</div><div>@wat912<br><small class="muted">ยังไม่เชื่อมต่อ</small></div></div></aside>
+  <main class="main" id="main"></main>
+</div>
+<div id="tip"></div>
+<script>
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>new Intl.NumberFormat('th-TH').format(Math.round(n));
+const short=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':String(Math.round(n));
+const KEY='catchflow-studio-v3';
+let seedN=7;const rnd=()=>(seedN=(seedN*16807)%2147483647)/2147483647;
+function genDaily(){const out=[];let fol=1200;const today=new Date();
+  for(let i=89;i>=0;i--){const d=new Date(today);d.setDate(d.getDate()-i);
+    const growth=1+(89-i)*0.025,views=Math.round(260*growth*(0.7+rnd()*0.6)*(d.getDay()%6===0?1.25:1));
+    fol+=Math.round(views*(0.008+rnd()*0.006));
+    out.push({d:d.toISOString().slice(0,10),views,likes:Math.round(views*(0.06+rnd()*0.03)),fol});}
+  return out}
+const seed=()=>({daily:genDaily(),
+  videos:[
+    {id:1,title:'ตกปลากะพงหน้าฝน',caption:'#ตกปลา #กะพง',views:12840,likes:930,comments:2,status:'ตัวอย่าง',date:'2026-10-01'},
+    {id:2,title:'รีวิวชุดยิงปลาไม้',caption:'#ยิงปลา',views:5120,likes:402,comments:1,status:'ตัวอย่าง',date:'2026-10-05'},
+    {id:3,title:'เทคนิคผูกสายเบ็ด',caption:'#เบ็ด #สอนตกปลา',views:21400,likes:1760,comments:0,status:'ตัวอย่าง',date:'2026-09-20'},
+    {id:4,title:'ทริปทะเลวันหยุด',caption:'#ทะเล #ตกปลา',views:8630,likes:640,comments:0,status:'ตัวอย่าง',date:'2026-09-12'}],
+  comments:[{id:1,video:1,user:'somchai',text:'ที่ไหนครับพี่ สวยมาก',reply:''},{id:2,video:2,user:'nid_fish',text:'ราคาเท่าไหร่คะ',reply:''}],
+  chats:[{id:1,name:'คุณสมชาย',msgs:[{me:false,t:'สนใจชุดยิงปลาครับ'}]},{id:2,name:'คุณนิด',msgs:[{me:false,t:'มีส่งต่างจังหวัดไหมคะ'}]}],
+  products:[{id:1,name:'ชุดยิงปลาไม้',sku:'SG-01',price:1890,stock:12},{id:2,name:'สายเบ็ดถัก 100 ม.',sku:'LN-100',price:320,stock:40},{id:3,name:'เหยื่อปลอมกะพง',sku:'LR-05',price:150,stock:3}],
+  customers:[{id:1,name:'คุณสมชาย',phone:'081-000-0001',note:'สนใจชุดยิงปลา'},{id:2,name:'คุณนิด',phone:'082-000-0002',note:'ส่งต่างจังหวัด'}],
+  orders:[{id:1,no:1001,customer:1,product:1,qty:1,status:'paid',date:'2026-10-03'},{id:2,no:1002,customer:2,product:2,qty:3,status:'pending',date:'2026-10-07'}],
+  settings:{shop:'CatchFlow',reply:'สวัสดีครับ สนใจสินค้าตัวไหนแจ้งได้เลยครับ'}});
+let S=JSON.parse(localStorage.getItem(KEY)||'null')||seed();
+{const d=seed();for(const k of ['products','customers','orders','settings'])if(!S[k])S[k]=d[k]}
+let page='dash',chatId=1,metric='views',range=30,sortBy='views',draft={};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const pages=[['dash','▦','ภาพรวม'],['upload','⬆','ลงคลิป'],['views','👁','ยอดวิว'],['growth','📈','กราฟการเติบโต'],['comments','💬','คอมเมนต์'],['chats','✉','แชท'],['products','◫','สินค้า'],['customers','♙','ลูกค้า'],['orders','▤','คำสั่งซื้อ'],['tiktok','🔗','เชื่อมต่อ TikTok'],['settings','⚙','ตั้งค่า']];
+const OST={pending:'รอชำระ',paid:'ชำระแล้ว',packing:'กำลังแพ็ก',shipped:'จัดส่งแล้ว',completed:'สำเร็จ',cancelled:'ยกเลิก'};
+const baht=n=>'฿'+fmt(n);
+const nm=(arr,id,k='name')=>arr.find(x=>x.id===id)?.[k]||'—';
+const orderTotal=o=>(S.products.find(p=>p.id===o.product)?.price||0)*o.qty;
+const vt=id=>S.videos.find(v=>v.id===id)?.title||'—';
+const banner='<div class="banner">โหมดทดลอง: ข้อมูลและกราฟเป็นตัวอย่างเก็บในเบราว์เซอร์นี้ ยังไม่ได้เชื่อมต่อ TikTok จึงไม่มีผลกับบัญชี @wat912</div>';
 
+const sum=(a,k)=>a.reduce((s,x)=>s+x[k],0);
+function growthPct(k,n){const cur=S.daily.slice(-n),prev=S.daily.slice(-2*n,-n);
+  if(k==='fol'){const a=cur.at(-1).fol-cur[0].fol,b=prev.at(-1).fol-prev[0].fol;return b?(a-b)/b*100:0}
+  const a=sum(cur,k),b=sum(prev,k);return b?(a-b)/b*100:0}
+const delta=p=>`<span class="${p>=0?'up':'dn'}">${p>=0?'▲':'▼'} ${Math.abs(p).toFixed(1)}%</span> <span class="muted" style="font-size:12px">เทียบช่วงก่อน</span>`;
+
+function chartSVG(data,key,w=860,h=300){
+  const p={l:46,r:14,t:14,b:26},iw=w-p.l-p.r,ih=h-p.t-p.b,vals=data.map(x=>x[key]);
+  let lo=Math.min(...vals),hi=Math.max(...vals);if(key!=='fol')lo=0;if(hi===lo)hi=lo+1;
+  const X=i=>p.l+i*iw/(data.length-1),Y=v=>p.t+ih-(v-lo)/(hi-lo)*ih;
+  const pts=vals.map((v,i)=>[X(i),Y(v)]),line=pts.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join('');
+  const grid=[0,1,2,3,4].map(i=>{const v=lo+(hi-lo)*i/4,y=Y(v);return `<line x1="${p.l}" x2="${w-p.r}" y1="${y}" y2="${y}" stroke="#232a3d"/><text x="${p.l-8}" y="${y+4}" text-anchor="end">${short(v)}</text>`}).join('');
+  const step=Math.ceil(data.length/6),xl=data.map((x,i)=>i%step===0?`<text x="${X(i)}" y="${h-6}" text-anchor="middle">${x.d.slice(5)}</text>`:'').join('');
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" id="chart" data-key="${key}"><defs><linearGradient id="g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fe2c55" stop-opacity=".35"/><stop offset="1" stop-color="#fe2c55" stop-opacity="0"/></linearGradient><linearGradient id="l" x1="0" x2="1"><stop offset="0" stop-color="#25f4ee"/><stop offset="1" stop-color="#fe2c55"/></linearGradient></defs>${grid}${xl}<path d="${line}L${X(data.length-1)} ${p.t+ih}L${p.l} ${p.t+ih}Z" fill="url(#g)"/><path d="${line}" fill="none" stroke="url(#l)" stroke-width="3" stroke-linejoin="round"/><circle id="dot" r="5" fill="#fff" stroke="#fe2c55" stroke-width="2" style="display:none"/><rect id="hit" x="${p.l}" y="0" width="${iw}" height="${h}" fill="transparent"/></svg>`}
+
+function nav(){document.getElementById('nav').innerHTML=pages.map(([id,i,l])=>`<button class="${page===id?'on':''}" data-p="${id}"><span>${i}</span>${l}</button>`).join('');
+  document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{page=b.dataset.p;render()})}
+
+function dash(){const v=sum(S.videos,'views'),l=sum(S.videos,'likes'),fol=S.daily.at(-1).fol,sales=S.orders.filter(o=>o.status!=='cancelled').reduce((a,o)=>a+orderTotal(o),0);
+  return `<div class="head"><h1>ภาพรวม</h1></div><div class="stats">
+  ${[['ยอดวิวรวม',fmt(v),delta(growthPct('views',7))],['ไลก์รวม',fmt(l),delta(growthPct('likes',7))],['ผู้ติดตาม',fmt(fol),delta(growthPct('fol',7))],['คลิปทั้งหมด',S.videos.length,''],['ยอดขายสะสม',baht(sales),''],['คำสั่งซื้อ',S.orders.length,''],['สินค้าใกล้หมด',S.products.filter(p=>p.stock<=5).length,'']].map(([a,b,c])=>`<div class="card"><div class="muted">${a}</div><div class="big">${b}</div>${c}</div>`).join('')}</div>
+  <div class="card"><h2>ยอดวิว 30 วันล่าสุด</h2>${chartSVG(S.daily.slice(-30),'views')}</div>
+  <div class="card"><h2>คลิปยอดนิยม</h2>${vtable([...S.videos].sort((a,b)=>b.views-a.views).slice(0,3))}</div>`}
+
+function vtable(rows,act){if(!rows.length)return '<p class="muted">ยังไม่มีคลิป</p>';
+  return `<table><thead><tr><th>คลิป</th><th>ยอดวิว</th><th>ไลก์</th><th>สถานะ</th><th>วันที่</th>${act?'<th></th>':''}</tr></thead><tbody>${rows.map(v=>`<tr><td><div style="display:flex;gap:12px;align-items:center"><div class="thumb">${v.src?`<video src="${v.src}" muted></video>`:'▶'}</div><div><b>${esc(v.title)}</b><br><span class="muted">${esc(v.caption)}</span></div></div></td><td>${fmt(v.views)}</td><td>${fmt(v.likes)}</td><td><span class="pill pk">${esc(v.status)}</span></td><td>${esc(v.date)}</td>${act?`<td><button class="del sec" data-delv="${v.id}">ลบ</button></td>`:''}</tr>`).join('')}</tbody></table>`}
+
+function upload(){const d=draft;
+  return `<div class="head"><h1>ลงคลิปใหม่</h1><span class="muted">ตัวอย่างหน้าตาแบบ TikTok</span></div>
+  <div class="upl"><div class="card"><form id="up">
+    <div class="drop" id="drop"><div style="font-size:34px">⬆</div><b>${d.name?esc(d.name):'เลือกไฟล์วิดีโอ'}</b><span class="muted">MP4, MOV, WebM · แนวตั้ง 9:16 ดีที่สุด</span><input type="file" id="file" accept="video/*" hidden></div>
+    <label>แคปชัน</label><textarea name="cap" id="cap" rows="3" maxlength="2200" placeholder="เขียนแคปชัน และ #แฮชแท็ก">${esc(d.cap||'')}</textarea>
+    <label>ชื่อคลิป (ใช้ในหลังบ้าน)</label><input name="title" id="ttl" required maxlength="150" value="${esc(d.title||'')}">
+    <label>ใครดูได้</label><select name="priv"><option>สาธารณะ</option><option>เฉพาะเพื่อน</option><option>ส่วนตัว</option></select>
+    <label>ตั้งเวลาโพสต์ (ไม่บังคับ)</label><input type="datetime-local" name="sched">
+    <div class="opt"><span>อนุญาตให้คอมเมนต์</span><input type="checkbox" checked></div>
+    <div class="opt"><span>อนุญาต Duet</span><input type="checkbox" checked></div>
+    <div class="opt"><span>อนุญาต Stitch</span><input type="checkbox" checked></div>
+    <div class="row" style="margin-top:18px"><button class="primary" style="flex:1">บันทึกคลิป</button><button type="button" class="sec" id="clr">ล้าง</button></div>
+    <p class="muted" style="font-size:12px">บันทึกในระบบเราเท่านั้น ยังไม่ส่งไป TikTok จนกว่าจะเชื่อมต่อ Content Posting API</p>
+  </form></div>
+  <div class="phone">${d.url?`<video src="${d.url}" controls loop muted autoplay></video>`:'<div class="ph">ตัวอย่างคลิปจะแสดงที่นี่</div>'}
+    <div class="rail"><div><span>❤</span>0</div><div><span>💬</span>0</div><div><span>↪</span>0</div></div>
+    <div class="ov"><b>@wat912</b><div id="pcap">${esc(d.cap||'แคปชันของคุณ')}</div></div></div></div>`}
+
+function views(){const rows=[...S.videos].sort((a,b)=>b[sortBy]-a[sortBy]),mx=Math.max(1,...S.videos.map(v=>v.views));
+  return `<div class="head"><h1>ยอดวิว</h1><div class="tabs">${[['views','ยอดวิว'],['likes','ไลก์'],['date','ล่าสุด']].map(([k,l])=>`<button class="${sortBy===k?'on':''}" data-sort="${k}">${l}</button>`).join('')}</div></div>
+  <div class="stats">${[['วิวรวม',fmt(sum(S.videos,'views'))],['เฉลี่ยต่อคลิป',fmt(sum(S.videos,'views')/Math.max(1,S.videos.length))],['อัตราไลก์',(sum(S.videos,'likes')/Math.max(1,sum(S.videos,'views'))*100).toFixed(1)+'%']].map(([a,b])=>`<div class="card"><div class="muted">${a}</div><div class="big">${b}</div></div>`).join('')}</div>
+  <div class="card"><h2>ยอดวิวแยกตามคลิป</h2><table><thead><tr><th>คลิป</th><th style="width:34%">สัดส่วน</th><th>วิว</th><th>ไลก์</th></tr></thead><tbody>${rows.map((v,i)=>`<tr><td><b>${i+1}. ${esc(v.title)}</b><br><span class="muted">${esc(v.date)}</span></td><td><div class="bar"><i style="width:${v.views/mx*100}%"></i></div></td><td>${fmt(v.views)}</td><td>${fmt(v.likes)}</td></tr>`).join('')}</tbody></table></div>
+  <div class="card"><h2>จัดการคลิป</h2>${vtable(rows,true)}</div>`}
+
+function growth(){const n=range,cur=S.daily.slice(-n),M={views:'ยอดวิว',likes:'ไลก์',fol:'ผู้ติดตาม'};
+  const total=metric==='fol'?cur.at(-1).fol-cur[0].fol:sum(cur,metric);
+  return `<div class="head"><h1>กราฟการเติบโต</h1><div><div class="tabs">${Object.entries(M).map(([k,l])=>`<button class="${metric===k?'on':''}" data-m="${k}">${l}</button>`).join('')}</div><div class="tabs">${[7,30,90].map(r=>`<button class="${range===r?'on':''}" data-r="${r}">${r} วัน</button>`).join('')}</div></div></div>
+  <div class="stats"><div class="card"><div class="muted">${M[metric]}${metric==='fol'?'ที่เพิ่ม':'รวม'} ใน ${n} วัน</div><div class="big">${fmt(total)}</div>${delta(growthPct(metric,n))}</div>
+  <div class="card"><div class="muted">เฉลี่ยต่อวัน</div><div class="big">${fmt(total/n)}</div></div>
+  <div class="card"><div class="muted">วันที่ดีที่สุด</div><div class="big">${(()=>{const b=cur.reduce((a,x)=>(metric==='fol'?x.fol:x[metric])>(metric==='fol'?a.fol:a[metric])?x:a);return b.d.slice(5)})()}</div></div></div>
+  <div class="card"><h2>${M[metric]}รายวัน</h2>${chartSVG(cur,metric)}</div>`}
+
+function comments(){return `<div class="head"><h1>คอมเมนต์</h1></div><div class="card">${S.comments.map(c=>`<div class="cm"><div class="av">${esc(c.user[0].toUpperCase())}</div><div style="flex:1"><b>@${esc(c.user)}</b> <span class="muted">· ${esc(vt(c.video))}</span><p>${esc(c.text)}</p>${c.reply?`<p class="muted">↳ ตอบ: ${esc(c.reply)}</p>`:`<form data-rc="${c.id}" class="row"><input name="r" placeholder="ตอบกลับ" required><button class="primary">ตอบ</button></form>`}</div></div>`).join('')||'<p class="muted">ยังไม่มีคอมเมนต์</p>'}</div>`}
+
+function chats(){const c=S.chats.find(x=>x.id===chatId)||S.chats[0];
+  return `<div class="head"><h1>แชท</h1><button class="sec" id="newchat">＋ แชทใหม่</button></div><div class="card"><div class="chat"><div class="list">${S.chats.map(x=>`<button class="item ${c&&x.id===c.id?'on':''}" data-c="${x.id}"><span class="av">${esc(x.name[0])}</span><span>${esc(x.name)}<br><small class="muted">${esc(x.msgs.at(-1)?.t||'')}</small></span></button>`).join('')}</div>
+  <div>${c?`<h3>${esc(c.name)}</h3><div class="msgs">${c.msgs.map(m=>`<div class="b ${m.me?'me':''}">${esc(m.t)}</div>`).join('')}</div><form id="send" class="row"><input name="t" placeholder="พิมพ์ข้อความ (บันทึกในระบบ ไม่ส่งไป TikTok)" required><button class="primary">ส่ง</button></form>`:'<p class="muted">ยังไม่มีแชท</p>'}</div></div></div>`}
+
+function products(){return `<div class="head"><h1>สินค้า</h1></div><div class="card"><h2>เพิ่มสินค้า</h2><form id="fprod" class="row" style="flex-wrap:wrap"><input name="name" placeholder="ชื่อสินค้า" required style="flex:2;min-width:160px"><input name="sku" placeholder="SKU" style="flex:1;min-width:90px"><input name="price" type="number" min="0" step="any" placeholder="ราคา" required style="flex:1;min-width:90px"><input name="stock" type="number" min="0" placeholder="สต็อก" required style="flex:1;min-width:90px"><button class="primary">เพิ่ม</button></form></div>
+<div class="card">${S.products.length?`<table><thead><tr><th>สินค้า</th><th>SKU</th><th>ราคา</th><th>คงเหลือ</th><th></th></tr></thead><tbody>${S.products.map(p=>`<tr><td><b>${esc(p.name)}</b></td><td>${esc(p.sku||'—')}</td><td>${baht(p.price)}</td><td>${p.stock<=5?`<span class="pill pk">${p.stock} ใกล้หมด</span>`:p.stock}</td><td><button class="sec del" data-del="products:${p.id}">ลบ</button></td></tr>`).join('')}</tbody></table>`:'<p class="muted">ยังไม่มีสินค้า</p>'}</div>`}
+
+function customers(){return `<div class="head"><h1>ลูกค้า</h1></div><div class="card"><h2>เพิ่มลูกค้า</h2><form id="fcust" class="row" style="flex-wrap:wrap"><input name="name" placeholder="ชื่อลูกค้า" required style="flex:2;min-width:160px"><input name="phone" placeholder="เบอร์โทร" style="flex:1;min-width:120px"><input name="note" placeholder="หมายเหตุ" style="flex:2;min-width:160px"><button class="primary">เพิ่ม</button></form></div>
+<div class="card">${S.customers.length?`<table><thead><tr><th>ชื่อ</th><th>โทร</th><th>หมายเหตุ</th><th></th></tr></thead><tbody>${S.customers.map(c=>`<tr><td><b>${esc(c.name)}</b></td><td>${esc(c.phone||'—')}</td><td>${esc(c.note||'—')}</td><td><button class="sec del" data-del="customers:${c.id}">ลบ</button></td></tr>`).join('')}</tbody></table>`:'<p class="muted">ยังไม่มีลูกค้า</p>'}</div>`}
+
+function orders(){const opt=(arr,f)=>arr.map(x=>`<option value="${x.id}">${esc(f(x))}</option>`).join('');
+  return `<div class="head"><h1>คำสั่งซื้อ</h1></div><div class="card"><h2>สร้างคำสั่งซื้อ</h2>${S.products.length?`<form id="ford" class="row" style="flex-wrap:wrap"><select name="customer" style="flex:1;min-width:140px;margin:0"><option value="0">ลูกค้าทั่วไป</option>${opt(S.customers,c=>c.name)}</select><select name="product" style="flex:2;min-width:180px;margin:0">${opt(S.products,p=>`${p.name} · ${baht(p.price)} · เหลือ ${p.stock}`)}</select><input name="qty" type="number" min="1" value="1" required style="width:90px"><button class="primary">สร้าง (ตัดสต็อก)</button></form>`:'<p class="muted">เพิ่มสินค้าก่อน</p>'}</div>
+<div class="card">${S.orders.length?`<table><thead><tr><th>เลขที่</th><th>วันที่</th><th>ลูกค้า</th><th>สินค้า</th><th>ยอดรวม</th><th>สถานะ</th><th></th></tr></thead><tbody>${[...S.orders].reverse().map(o=>`<tr><td>#${o.no}</td><td>${esc(o.date)}</td><td>${o.customer?esc(nm(S.customers,o.customer)):'ลูกค้าทั่วไป'}</td><td>${esc(nm(S.products,o.product))} ×${o.qty}</td><td>${baht(orderTotal(o))}</td><td><select data-ost="${o.id}" style="margin:0;width:auto">${Object.entries(OST).map(([k,l])=>`<option value="${k}" ${o.status===k?'selected':''}>${l}</option>`).join('')}</select></td><td><button class="sec del" data-del="orders:${o.id}">ลบ</button></td></tr>`).join('')}</tbody></table>`:'<p class="muted">ยังไม่มีคำสั่งซื้อ</p>'}</div>`}
+
+function settings(){return `<div class="head"><h1>ตั้งค่า</h1></div><div class="card"><h2>ข้อมูลร้าน</h2><form id="fset"><label>ชื่อร้าน</label><input name="shop" value="${esc(S.settings.shop)}" required><label>ข้อความตอบกลับที่แนะนำ</label><textarea name="reply" rows="3">${esc(S.settings.reply)}</textarea><button class="primary">บันทึก</button></form></div>
+<div class="card"><h2>ข้อมูลทดลอง</h2><p class="muted">ข้อมูลทั้งหมดเก็บในเบราว์เซอร์เครื่องนี้</p><button class="sec del" id="reset">ล้างข้อมูลทดลองทั้งหมด</button></div>`}
+
+function tiktok(){const c=S.conn||{};
+  return `<div class="head"><h1>เชื่อมต่อ TikTok</h1></div>
+<div class="card"><h2>บัญชีช่อง</h2><div id="ttlive"><p class="muted">กำลังตรวจสอบ...</p></div>
+${c.demo?`<p><span class="pill ok">โหมดจำลอง</span> <b>${esc(c.email)}</b> <button class="sec del" id="disc">ยกเลิกการจำลอง</button></p>`:''}
+</div><div class="card"><h2>เชื่อมต่อ TikTok</h2>
+<p><a class="primary" href="/api/tiktok/login" style="display:block;text-align:center;padding:14px;border-radius:12px;text-decoration:none;color:#fff;font-weight:700">เข้าสู่ระบบด้วย TikTok (สแกน QR / รหัสผ่านที่หน้า TikTok)</a></p>
+<p class="muted" style="font-size:13px">กดแล้วจะไปหน้าล็อกอินของ TikTok เอง เว็บเราไม่เห็นรหัสผ่าน เสร็จแล้วระบบดึงยอดวิว ไลก์ ผู้ติดตาม และคลิปจริงมาแสดง (ใช้ได้เมื่อเปิดผ่านเว็บบน Vercel ไม่ใช่เปิดไฟล์ตรง)</p></div>
+<div class="card"><h2>โหมดจำลอง (ดูหน้าตาเท่านั้น)</h2>
+<form id="conn"><label>อีเมลที่ใช้กับช่อง (ใช้แสดงชื่อ ห้ามใส่รหัสผ่านที่นี่)</label><input type="email" name="email" value="${esc(c.email||'mokll0081@gmail.com')}" required>
+<div class="row" style="margin-top:12px"><button class="primary" id="demo" style="flex:1">เข้าสู่ระบบ (ทดลอง)</button></div>
+</form></div>
+<div class="card"><p>
+<table><tbody><tr><td>โพสต์คลิปไป TikTok</td><td>Content Posting API (ต้องผ่าน audit)</td></tr><tr><td>ยอดวิว/ไลก์/ผู้ติดตามจริง</td><td>Display API</td></tr><tr><td>คอมเมนต์</td><td>จำกัดตามสิทธิ์ที่ TikTok อนุมัติ</td></tr><tr><td>แชท DM</td><td>ต้องเป็นบัญชี Business ที่ได้รับอนุมัติ</td></tr></tbody></table>
+<p class="muted">ต้องมี Client Key/Secret จาก TikTok for Developers และให้เจ้าของบัญชีกดอนุญาต (OAuth)</p><button class="sec del" id="reset">ล้างข้อมูลทดลอง</button></div>`}
+
+async function loadTT(el){
+  try{const r=await fetch('/api/tiktok/me',{cache:'no-store'});if(!r.ok)throw 0;const d=await r.json();
+    if(!d.connected){el.innerHTML='<p><span class="pill pk">ยังไม่ได้เชื่อมต่อ</span></p>';return}
+    const u=d.user||{},n=x=>Number(x||0).toLocaleString();
+    el.innerHTML=`<p><span class="pill ok">เชื่อมต่อจริงแล้ว</span> <b>${esc(u.display_name||'')}</b> <a href="/api/tiktok/logout" class="muted">ออกจากระบบ</a></p>
+<p class="muted">ผู้ติดตาม ${n(u.follower_count)} · ไลก์รวม ${n(u.likes_count)} · คลิป ${n(u.video_count)}</p>
+<table><thead><tr><th>คลิปจริงจาก TikTok</th><th>วิว</th><th>ไลก์</th><th>คอมเมนต์</th></tr></thead><tbody>${(d.videos||[]).map(v=>`<tr><td><a href="${esc(v.share_url)}" target="_blank" rel="noopener">${esc(v.title||'(ไม่มีชื่อ)')}</a></td><td>${n(v.view_count)}</td><td>${n(v.like_count)}</td><td>${n(v.comment_count)}</td></tr>`).join('')}</tbody></table>`;
+  }catch{el.innerHTML='<p><span class="pill pk">ยังไม่ได้เชื่อมต่อ</span></p><p class="muted">เปิดผ่านเว็บบน Vercel จึงจะเชื่อมจริงได้</p>'}}
+function render(){nav();const me=document.querySelector('.me');if(me)me.innerHTML=`<div class="av">${S.conn?.demo?esc(S.conn.email[0].toUpperCase()):'?'}</div><div>${S.conn?.demo?esc(S.conn.email):esc(S.settings.shop)}<br><small class="muted">${S.conn?.demo?'จำลอง':'ยังไม่เชื่อมต่อ TikTok'}</small></div>`;
+  const v={dash,upload,views,growth,comments,chats,products,customers,orders,tiktok,settings};
+  document.getElementById('main').innerHTML=banner+v[page]();bind()}
+
+function bind(){
+  const $=id=>document.getElementById(id),on=(sel,fn)=>document.querySelectorAll(sel).forEach(fn);
+  const nid=a=>Math.max(0,...a.map(x=>x.id))+1;
+  on('[data-del]',b=>b.onclick=()=>{const [t,id]=b.dataset.del.split(':');if(confirm('ยืนยันลบรายการนี้?')){S[t]=S[t].filter(x=>x.id!==+id);save();render()}});
+  on('[data-ost]',s=>s.onchange=()=>{S.orders.find(o=>o.id===+s.dataset.ost).status=s.value;save();render()});
+  const fp=$('fprod');if(fp)fp.onsubmit=e=>{e.preventDefault();const d=Object.fromEntries(new FormData(fp));S.products.push({id:nid(S.products),name:d.name,sku:d.sku,price:+d.price,stock:+d.stock});save();render()};
+  const fc=$('fcust');if(fc)fc.onsubmit=e=>{e.preventDefault();const d=Object.fromEntries(new FormData(fc));S.customers.push({id:nid(S.customers),...d});save();render()};
+  const fo=$('ford');if(fo)fo.onsubmit=e=>{e.preventDefault();const d=Object.fromEntries(new FormData(fo)),p=S.products.find(x=>x.id===+d.product),q=+d.qty;
+    if(!p||q<1)return;if(p.stock<q){alert('สต็อกไม่พอ เหลือ '+p.stock);return}
+    p.stock-=q;S.orders.push({id:nid(S.orders),no:Math.max(1000,...S.orders.map(o=>o.no))+1,customer:+d.customer,product:p.id,qty:q,status:'pending',date:new Date().toISOString().slice(0,10)});save();render()};
+  const fs=$('fset');if(fs)fs.onsubmit=e=>{e.preventDefault();Object.assign(S.settings,Object.fromEntries(new FormData(fs)));save();render();alert('บันทึกแล้ว')};
+  on('[data-delv]',b=>b.onclick=()=>{if(confirm('ลบคลิปนี้?')){S.videos=S.videos.filter(v=>v.id!==+b.dataset.delv);save();render()}});
+  on('[data-sort]',b=>b.onclick=()=>{sortBy=b.dataset.sort;render()});
+  on('[data-m]',b=>b.onclick=()=>{metric=b.dataset.m;render()});
+  on('[data-r]',b=>b.onclick=()=>{range=+b.dataset.r;render()});
+  on('[data-c]',b=>b.onclick=()=>{chatId=+b.dataset.c;render()});
+  on('[data-rc]',f=>f.onsubmit=e=>{e.preventDefault();S.comments.find(c=>c.id===+f.dataset.rc).reply=new FormData(f).get('r');save();render()});
+  const drop=$('drop');if(drop){const fi=$('file');drop.onclick=()=>fi.click();
+    fi.onchange=()=>{const f=fi.files[0];if(!f)return;draft.cap=$('cap').value;draft.title=$('ttl').value||f.name.replace(/\.[^.]+$/,'');draft.name=f.name;draft.url=URL.createObjectURL(f);render()};
+    $('cap').oninput=e=>{draft.cap=e.target.value;$('pcap').textContent=e.target.value||'แคปชันของคุณ'};
+    $('ttl').oninput=e=>draft.title=e.target.value;
+    $('clr').onclick=()=>{draft={};render()};
+    $('up').onsubmit=e=>{e.preventDefault();const d=new FormData($('up'));
+      S.videos.unshift({id:Date.now(),title:d.get('title'),caption:d.get('cap')||'',views:0,likes:0,comments:0,status:d.get('sched')?'ตั้งเวลา':'เก็บในระบบ',date:new Date().toISOString().slice(0,10),src:draft.url||''});
+      draft={};save();page='views';render()}}
+  const sd=$('send');if(sd)sd.onsubmit=e=>{e.preventDefault();S.chats.find(c=>c.id===chatId).msgs.push({me:true,t:new FormData(sd).get('t')});save();render()};
+  const nc=$('newchat');if(nc)nc.onclick=()=>{const n=prompt('ชื่อลูกค้า');if(!n)return;const id=Date.now();S.chats.push({id,name:n,msgs:[]});chatId=id;save();render()};
+  const cf=$('conn');if(cf){const val=()=>Object.fromEntries(new FormData(cf));
+    cf.onsubmit=e=>{e.preventDefault();const v=val();S.conn={demo:true,email:v.email};save();render()};
+  }
+  const live=$('ttlive');if(live)loadTT(live);
+  const dc=$('disc');if(dc)dc.onclick=()=>{S.conn=null;save();render()};
+  const rs=$('reset');if(rs)rs.onclick=()=>{if(confirm('ล้างข้อมูลทดลองทั้งหมด?')){localStorage.removeItem(KEY);S=seed();render()}};
+  const ch=$('chart');if(ch)bindChart(ch);
+}
+function bindChart(svg){const data=page==='growth'?S.daily.slice(-range):S.daily.slice(-30),key=svg.dataset.key,tip=document.getElementById('tip'),dot=svg.querySelector('#dot'),hit=svg.querySelector('#hit');
+  const vals=data.map(x=>x[key]);let lo=key==='fol'?Math.min(...vals):0,hi=Math.max(...vals);if(hi===lo)hi=lo+1;
+  hit.onmousemove=e=>{const r=svg.getBoundingClientRect(),sx=860/r.width,x=(e.clientX-r.left)*sx,i=Math.max(0,Math.min(data.length-1,Math.round((x-46)/(860-60)*(data.length-1))));
+    const px=46+i*(860-60)/(data.length-1),py=14+(300-40)-(vals[i]-lo)/(hi-lo)*(300-40);
+    dot.setAttribute('cx',px);dot.setAttribute('cy',py);dot.style.display='';
+    tip.style.display='block';tip.style.left=e.clientX+14+'px';tip.style.top=e.clientY-34+'px';tip.textContent=`${data[i].d} · ${fmt(vals[i])}`};
+  hit.onmouseleave=()=>{tip.style.display='none';dot.style.display='none'}}
+if(location.hash==='#tiktok')page='tiktok';
+render();
+</script>
+</body>
+</html>
