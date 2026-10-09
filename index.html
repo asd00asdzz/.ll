@@ -113,7 +113,10 @@ const baht=n=>'฿'+fmt(n);
 const nm=(arr,id,k='name')=>arr.find(x=>x.id===id)?.[k]||'—';
 const orderTotal=o=>(S.products.find(p=>p.id===o.product)?.price||0)*o.qty;
 const vt=id=>S.videos.find(v=>v.id===id)?.title||'—';
-const banner='<div class="banner">โหมดทดลอง: ข้อมูลและกราฟเป็นตัวอย่างเก็บในเบราว์เซอร์นี้ ยังไม่ได้เชื่อมต่อ TikTok จึงไม่มีผลกับบัญชี @wat912</div>';
+let LIVE=null;
+const V=()=>LIVE?.videos?LIVE.videos.map(v=>({id:v.id,title:v.title||'(ไม่มีชื่อ)',caption:'',views:v.view_count||0,likes:v.like_count||0,comments:v.comment_count||0,status:'TikTok',date:new Date((v.create_time||0)*1000).toISOString().slice(0,10)})):S.videos;
+const banner=()=>LIVE?'<div class="banner" style="background:#0f3d2e;color:#3ddc97">เชื่อมต่อ TikTok จริงแล้ว: ยอดวิว ไลก์ ผู้ติดตาม และคลิป มาจากบัญชี '+esc(LIVE.user?.display_name||'')+' (กราฟรายวันยังเป็นตัวอย่าง)</div>':'<div class="banner">โหมดทดลอง: ข้อมูลและกราฟเป็นตัวอย่างเก็บในเบราว์เซอร์นี้ ยังไม่ได้เชื่อมต่อ TikTok จึงไม่มีผลกับบัญชี @wat912</div>';
+fetch('/api/tiktok/me',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{if(d?.connected){LIVE=d;render()}}).catch(()=>{});
 
 const sum=(a,k)=>a.reduce((s,x)=>s+x[k],0);
 function growthPct(k,n){const cur=S.daily.slice(-n),prev=S.daily.slice(-2*n,-n);
@@ -133,11 +136,11 @@ function chartSVG(data,key,w=860,h=300){
 function nav(){document.getElementById('nav').innerHTML=pages.map(([id,i,l])=>`<button class="${page===id?'on':''}" data-p="${id}"><span>${i}</span>${l}</button>`).join('');
   document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{page=b.dataset.p;render()})}
 
-function dash(){const v=sum(S.videos,'views'),l=sum(S.videos,'likes'),fol=S.daily.at(-1).fol,sales=S.orders.filter(o=>o.status!=='cancelled').reduce((a,o)=>a+orderTotal(o),0);
+function dash(){const VV=V(),v=sum(VV,'views'),l=sum(VV,'likes'),fol=LIVE?.user?.follower_count??S.daily.at(-1).fol,sales=S.orders.filter(o=>o.status!=='cancelled').reduce((a,o)=>a+orderTotal(o),0);
   return `<div class="head"><h1>ภาพรวม</h1></div><div class="stats">
-  ${[['ยอดวิวรวม',fmt(v),delta(growthPct('views',7))],['ไลก์รวม',fmt(l),delta(growthPct('likes',7))],['ผู้ติดตาม',fmt(fol),delta(growthPct('fol',7))],['คลิปทั้งหมด',S.videos.length,''],['ยอดขายสะสม',baht(sales),''],['คำสั่งซื้อ',S.orders.length,''],['สินค้าใกล้หมด',S.products.filter(p=>p.stock<=5).length,'']].map(([a,b,c])=>`<div class="card"><div class="muted">${a}</div><div class="big">${b}</div>${c}</div>`).join('')}</div>
+  ${[['ยอดวิวรวม',fmt(v),delta(growthPct('views',7))],['ไลก์รวม',fmt(l),delta(growthPct('likes',7))],['ผู้ติดตาม',fmt(fol),delta(growthPct('fol',7))],['คลิปทั้งหมด',VV.length,''],['ยอดขายสะสม',baht(sales),''],['คำสั่งซื้อ',S.orders.length,''],['สินค้าใกล้หมด',S.products.filter(p=>p.stock<=5).length,'']].map(([a,b,c])=>`<div class="card"><div class="muted">${a}</div><div class="big">${b}</div>${c}</div>`).join('')}</div>
   <div class="card"><h2>ยอดวิว 30 วันล่าสุด</h2>${chartSVG(S.daily.slice(-30),'views')}</div>
-  <div class="card"><h2>คลิปยอดนิยม</h2>${vtable([...S.videos].sort((a,b)=>b.views-a.views).slice(0,3))}</div>`}
+  <div class="card"><h2>คลิปยอดนิยม</h2>${vtable([...VV].sort((a,b)=>b.views-a.views).slice(0,3))}</div>`}
 
 function vtable(rows,act){if(!rows.length)return '<p class="muted">ยังไม่มีคลิป</p>';
   return `<table><thead><tr><th>คลิป</th><th>ยอดวิว</th><th>ไลก์</th><th>สถานะ</th><th>วันที่</th>${act?'<th></th>':''}</tr></thead><tbody>${rows.map(v=>`<tr><td><div style="display:flex;gap:12px;align-items:center"><div class="thumb">${v.src?`<video src="${v.src}" muted></video>`:'▶'}</div><div><b>${esc(v.title)}</b><br><span class="muted">${esc(v.caption)}</span></div></div></td><td>${fmt(v.views)}</td><td>${fmt(v.likes)}</td><td><span class="pill pk">${esc(v.status)}</span></td><td>${esc(v.date)}</td>${act?`<td><button class="del sec" data-delv="${v.id}">ลบ</button></td>`:''}</tr>`).join('')}</tbody></table>`}
@@ -160,9 +163,9 @@ function upload(){const d=draft;
     <div class="rail"><div><span>❤</span>0</div><div><span>💬</span>0</div><div><span>↪</span>0</div></div>
     <div class="ov"><b>@wat912</b><div id="pcap">${esc(d.cap||'แคปชันของคุณ')}</div></div></div></div>`}
 
-function views(){const rows=[...S.videos].sort((a,b)=>b[sortBy]-a[sortBy]),mx=Math.max(1,...S.videos.map(v=>v.views));
+function views(){const VV=V(),rows=[...VV].sort((a,b)=>b[sortBy]>a[sortBy]?1:-1),mx=Math.max(1,...VV.map(v=>v.views));
   return `<div class="head"><h1>ยอดวิว</h1><div class="tabs">${[['views','ยอดวิว'],['likes','ไลก์'],['date','ล่าสุด']].map(([k,l])=>`<button class="${sortBy===k?'on':''}" data-sort="${k}">${l}</button>`).join('')}</div></div>
-  <div class="stats">${[['วิวรวม',fmt(sum(S.videos,'views'))],['เฉลี่ยต่อคลิป',fmt(sum(S.videos,'views')/Math.max(1,S.videos.length))],['อัตราไลก์',(sum(S.videos,'likes')/Math.max(1,sum(S.videos,'views'))*100).toFixed(1)+'%']].map(([a,b])=>`<div class="card"><div class="muted">${a}</div><div class="big">${b}</div></div>`).join('')}</div>
+  <div class="stats">${[['วิวรวม',fmt(sum(VV,'views'))],['เฉลี่ยต่อคลิป',fmt(sum(VV,'views')/Math.max(1,VV.length))],['อัตราไลก์',(sum(VV,'likes')/Math.max(1,sum(VV,'views'))*100).toFixed(1)+'%']].map(([a,b])=>`<div class="card"><div class="muted">${a}</div><div class="big">${b}</div></div>`).join('')}</div>
   <div class="card"><h2>ยอดวิวแยกตามคลิป</h2><table><thead><tr><th>คลิป</th><th style="width:34%">สัดส่วน</th><th>วิว</th><th>ไลก์</th></tr></thead><tbody>${rows.map((v,i)=>`<tr><td><b>${i+1}. ${esc(v.title)}</b><br><span class="muted">${esc(v.date)}</span></td><td><div class="bar"><i style="width:${v.views/mx*100}%"></i></div></td><td>${fmt(v.views)}</td><td>${fmt(v.likes)}</td></tr>`).join('')}</tbody></table></div>
   <div class="card"><h2>จัดการคลิป</h2>${vtable(rows,true)}</div>`}
 
@@ -198,8 +201,9 @@ function tiktok(){const c=S.conn||{};
 <div class="card"><h2>บัญชีช่อง</h2><div id="ttlive"><p class="muted">กำลังตรวจสอบ...</p></div>
 ${c.demo?`<p><span class="pill ok">โหมดจำลอง</span> <b>${esc(c.email)}</b> <button class="sec del" id="disc">ยกเลิกการจำลอง</button></p>`:''}
 </div><div class="card"><h2>เชื่อมต่อ TikTok</h2>
-<p><a class="primary" href="/api/tiktok/login" style="display:block;text-align:center;padding:14px;border-radius:12px;text-decoration:none;color:#fff;font-weight:700">เข้าสู่ระบบด้วย TikTok (สแกน QR / รหัสผ่านที่หน้า TikTok)</a></p>
-<p class="muted" style="font-size:13px">กดแล้วจะไปหน้าล็อกอินของ TikTok เอง เว็บเราไม่เห็นรหัสผ่าน เสร็จแล้วระบบดึงยอดวิว ไลก์ ผู้ติดตาม และคลิปจริงมาแสดง (ใช้ได้เมื่อเปิดผ่านเว็บบน Vercel ไม่ใช่เปิดไฟล์ตรง)</p></div>
+<p><a id="ttgo" href="/api/tiktok/login" style="display:block;text-align:center;padding:16px;border-radius:12px;text-decoration:none;color:#fff;font-weight:700;font-size:16px;background:var(--pk)">🔗 เชื่อมต่อ TikTok ของฉัน</a></p>
+<p class="muted" style="font-size:13px">กดแล้วไปหน้าล็อกอินของ TikTok เอง (สแกน QR หรือกรอกรหัสที่หน้านั้น) เว็บเราไม่เห็นรหัสผ่าน หลังอนุญาต ระบบจะดึงผู้ติดตาม ยอดวิว ไลก์ และคลิปจริงมาแสดงในหน้า ภาพรวม และ ยอดวิว อัตโนมัติ</p>
+${location.protocol==='file:'?'<p class="pill pk" style="display:block;padding:10px">ตอนนี้เปิดจากไฟล์ในเครื่อง ปุ่มนี้จะใช้ได้เมื่ออัปโหลดขึ้น Vercel และตั้งค่า TikTok เสร็จแล้ว</p>':''}</div>
 <div class="card"><h2>QR Code</h2><div class="row" style="gap:28px;flex-wrap:wrap;align-items:flex-start">
 <div style="text-align:center"><div id="qrLogin" style="background:#fff;padding:10px;border-radius:12px;display:inline-block"></div><p><b>สแกนเพื่อล็อกอินด้วยมือถือ</b></p><p class="muted" style="font-size:12px;max-width:220px" id="qrLoginNote"></p></div>
 <div style="text-align:center"><div id="qrProf" style="background:#fff;padding:10px;border-radius:12px;display:inline-block"></div><p><b>QR ช่อง TikTok @wat912</b></p><p class="muted" style="font-size:12px">ให้ลูกค้าสแกนเพื่อติดตามและทักแชท</p></div></div></div>
@@ -215,13 +219,13 @@ async function loadTT(el){
   try{const r=await fetch('/api/tiktok/me',{cache:'no-store'});if(!r.ok)throw 0;const d=await r.json();
     if(!d.connected){el.innerHTML='<p><span class="pill pk">ยังไม่ได้เชื่อมต่อ</span></p>';return}
     const u=d.user||{},n=x=>Number(x||0).toLocaleString();
-    el.innerHTML=`<p><span class="pill ok">เชื่อมต่อจริงแล้ว</span> <b>${esc(u.display_name||'')}</b> <a href="/api/tiktok/logout" class="muted">ออกจากระบบ</a></p>
-<p class="muted">ผู้ติดตาม ${n(u.follower_count)} · ไลก์รวม ${n(u.likes_count)} · คลิป ${n(u.video_count)}</p>
+    el.innerHTML=`<p><span class="pill ok">เชื่อมต่อจริงแล้ว</span> <b>${esc(u.display_name||'')}</b> <a href="/api/tiktok/logout" class="muted">ยกเลิกการเชื่อมต่อ</a></p>
+    <div class="stats"><div class="card"><div class="muted">ผู้ติดตาม</div><div class="big">${n(u.follower_count)}</div></div><div class="card"><div class="muted">ไลก์รวม</div><div class="big">${n(u.likes_count)}</div></div><div class="card"><div class="muted">คลิป</div><div class="big">${n(u.video_count)}</div></div></div>
 <table><thead><tr><th>คลิปจริงจาก TikTok</th><th>วิว</th><th>ไลก์</th><th>คอมเมนต์</th></tr></thead><tbody>${(d.videos||[]).map(v=>`<tr><td><a href="${esc(v.share_url)}" target="_blank" rel="noopener">${esc(v.title||'(ไม่มีชื่อ)')}</a></td><td>${n(v.view_count)}</td><td>${n(v.like_count)}</td><td>${n(v.comment_count)}</td></tr>`).join('')}</tbody></table>`;
   }catch{el.innerHTML='<p><span class="pill pk">ยังไม่ได้เชื่อมต่อ</span></p><p class="muted">เปิดผ่านเว็บบน Vercel จึงจะเชื่อมจริงได้</p>'}}
 function render(){nav();const me=document.querySelector('.me');if(me)me.innerHTML=`<div class="av">${S.conn?.demo?esc(S.conn.email[0].toUpperCase()):'?'}</div><div>${S.conn?.demo?esc(S.conn.email):esc(S.settings.shop)}<br><small class="muted">${S.conn?.demo?'จำลอง':'ยังไม่เชื่อมต่อ TikTok'}</small></div>`;
   const v={dash,upload,views,growth,comments,chats,products,customers,orders,tiktok,settings};
-  document.getElementById('main').innerHTML=banner+v[page]();bind()}
+  document.getElementById('main').innerHTML=banner()+v[page]();bind()}
 
 function bind(){
   const $=id=>document.getElementById(id),on=(sel,fn)=>document.querySelectorAll(sel).forEach(fn);
@@ -254,6 +258,7 @@ function bind(){
     cf.onsubmit=e=>{e.preventDefault();const v=val();S.conn={demo:true,email:v.email};save();render()};
   }
   const live=$('ttlive');if(live)loadTT(live);
+  const go=$('ttgo');if(go&&location.protocol==='file:')go.onclick=e=>{e.preventDefault();alert('ปุ่มนี้ใช้ไม่ได้ตอนเปิดไฟล์จากเครื่อง\n\nต้องอัปโหลดโปรเจกต์ขึ้น Vercel แล้วเปิดผ่านลิงก์ https://...vercel.app จึงจะไปหน้าล็อกอิน TikTok ได้')};
   const mkqr=(id,text)=>{const el=$(id);if(!el)return;const q=qrcode(0,'M');q.addData(text);q.make();el.innerHTML=q.createSvgTag({cellSize:5,margin:0})};
   mkqr('qrProf','https://www.tiktok.com/@wat912');
   if($('qrLogin')){const web=/^https?:/.test(location.protocol);
