@@ -78,6 +78,7 @@ svg text{fill:var(--muted);font-size:11px}
   <main class="main" id="main"></main>
 </div>
 <div id="tip"></div>
+<script src="qrcode.js"></script>
 <script>
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=n=>new Intl.NumberFormat('th-TH').format(Math.round(n));
@@ -199,6 +200,9 @@ ${c.demo?`<p><span class="pill ok">โหมดจำลอง</span> <b>${esc(c
 </div><div class="card"><h2>เชื่อมต่อ TikTok</h2>
 <p><a class="primary" href="/api/tiktok/login" style="display:block;text-align:center;padding:14px;border-radius:12px;text-decoration:none;color:#fff;font-weight:700">เข้าสู่ระบบด้วย TikTok (สแกน QR / รหัสผ่านที่หน้า TikTok)</a></p>
 <p class="muted" style="font-size:13px">กดแล้วจะไปหน้าล็อกอินของ TikTok เอง เว็บเราไม่เห็นรหัสผ่าน เสร็จแล้วระบบดึงยอดวิว ไลก์ ผู้ติดตาม และคลิปจริงมาแสดง (ใช้ได้เมื่อเปิดผ่านเว็บบน Vercel ไม่ใช่เปิดไฟล์ตรง)</p></div>
+<div class="card"><h2>QR Code</h2><div class="row" style="gap:28px;flex-wrap:wrap;align-items:flex-start">
+<div style="text-align:center"><div id="qrLogin" style="background:#fff;padding:10px;border-radius:12px;display:inline-block"></div><p><b>สแกนเพื่อล็อกอินด้วยมือถือ</b></p><p class="muted" style="font-size:12px;max-width:220px" id="qrLoginNote"></p></div>
+<div style="text-align:center"><div id="qrProf" style="background:#fff;padding:10px;border-radius:12px;display:inline-block"></div><p><b>QR ช่อง TikTok @wat912</b></p><p class="muted" style="font-size:12px">ให้ลูกค้าสแกนเพื่อติดตามและทักแชท</p></div></div></div>
 <div class="card"><h2>โหมดจำลอง (ดูหน้าตาเท่านั้น)</h2>
 <form id="conn"><label>อีเมลที่ใช้กับช่อง (ใช้แสดงชื่อ ห้ามใส่รหัสผ่านที่นี่)</label><input type="email" name="email" value="${esc(c.email||'mokll0081@gmail.com')}" required>
 <div class="row" style="margin-top:12px"><button class="primary" id="demo" style="flex:1">เข้าสู่ระบบ (ทดลอง)</button></div>
@@ -250,6 +254,11 @@ function bind(){
     cf.onsubmit=e=>{e.preventDefault();const v=val();S.conn={demo:true,email:v.email};save();render()};
   }
   const live=$('ttlive');if(live)loadTT(live);
+  const mkqr=(id,text)=>{const el=$(id);if(!el)return;const q=qrcode(0,'M');q.addData(text);q.make();el.innerHTML=q.createSvgTag({cellSize:5,margin:0})};
+  mkqr('qrProf','https://www.tiktok.com/@wat912');
+  if($('qrLogin')){const web=/^https?:/.test(location.protocol);
+    if(web){mkqr('qrLogin',location.origin+'/api/tiktok/login');$('qrLoginNote').textContent='เปิดด้วยกล้องมือถือ แล้วอนุญาตในแอป TikTok'}
+    else{$('qrLogin').innerHTML='<div style="width:150px;height:150px;color:#555;display:flex;align-items:center;justify-content:center;font-size:12px">ใช้ได้หลังขึ้น Vercel</div>';$('qrLoginNote').textContent='ตอนนี้เปิดจากไฟล์ในเครื่อง จึงยังสร้างลิงก์ล็อกอินไม่ได้'}}
   const dc=$('disc');if(dc)dc.onclick=()=>{S.conn=null;save();render()};
   const rs=$('reset');if(rs)rs.onclick=()=>{if(confirm('ล้างข้อมูลทดลองทั้งหมด?')){localStorage.removeItem(KEY);S=seed();render()}};
   const ch=$('chart');if(ch)bindChart(ch);
